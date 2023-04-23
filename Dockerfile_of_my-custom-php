@@ -1,0 +1,20 @@
+# Of course we use official PHP8 Docker image
+FROM php:8-apache
+# Apache enable rewrite and ssl mod
+RUN a2enmod rewrite &&\
+	a2enmod ssl
+# Debian update and configuration
+RUN apt update &&\
+	apt install -y git vim nano zip unzip wget\
+	libmagickwand-dev --no-install-recommends && rm -rf /var/lib/apt/lists/*\
+	libfreetype6-dev libjpeg62-turbo-dev libpng-dev
+# PHP configuration and composer install    
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg &&\
+	docker-php-ext-install mysqli pdo pdo_mysql exif intl -j$(nproc) gd &&\
+	curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Optional symfony-cli install
+RUN wget https://get.symfony.com/cli/installer -O - | bash &&\
+	mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+# Ports beeing exposed
+EXPOSE 80
+EXPOSE 443
